@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
 import os
@@ -32,6 +34,85 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
+# ---------------- DISEASE INFO ----------------
+disease_info = {
+    "akiec": {
+        "name": "Actinic Keratosis",
+        "medicines": ["Diclofenac Gel 3%", "Fluorouracil Cream 5%"],
+        "precautions": [
+            "Avoid sun exposure",
+            "Use sunscreen SPF 50+",
+            "Wear protective clothing"
+        ],
+        "link": "https://www.1mg.com"
+    },
+
+    "bcc": {
+        "name": "Basal Cell Carcinoma",
+        "medicines": ["Imiquimod Cream 5%", "Fluorouracil 5%"],
+        "precautions": [
+            "Avoid UV rays",
+            "Regular skin checkup",
+            "Use sunscreen daily"
+        ],
+        "link": "https://www.apollopharmacy.in"
+    },
+
+    "bkl": {
+        "name": "Benign Keratosis",
+        "medicines": ["Salicylic Acid Cream 6%", "Cryotherapy"],
+        "precautions": [
+            "Do not scratch",
+            "Maintain hygiene",
+            "Consult doctor if irritated"
+        ],
+        "link": "https://www.netmeds.com"
+    },
+
+    "df": {
+        "name": "Dermatofibroma",
+        "medicines": ["Usually no treatment required"],
+        "precautions": [
+            "Avoid skin injury",
+            "Monitor changes",
+            "Consult doctor if painful"
+        ],
+        "link": "https://www.apollopharmacy.in"
+    },
+
+    "nv": {
+        "name": "Melanocytic Nevus (Mole)",
+        "medicines": ["No medication needed"],
+        "precautions": [
+            "Monitor size and color",
+            "Avoid irritation",
+            "Consult doctor if changes occur"
+        ],
+        "link": "https://www.netmeds.com"
+    },
+
+    "vasc": {
+        "name": "Vascular Lesion",
+        "medicines": ["Laser therapy", "Topical beta blockers"],
+        "precautions": [
+            "Avoid injury",
+            "Keep area clean",
+            "Consult specialist if bleeding"
+        ],
+        "link": "https://www.1mg.com"
+    },
+
+    "mel": {
+        "name": "Melanoma (Skin Cancer)",
+        "medicines": ["Dacarbazine 100mg", "Temozolomide 250mg"],
+        "precautions": [
+            "Avoid sunlight exposure",
+            "Use sunscreen SPF 50+",
+            "Immediate medical consultation"
+        ],
+        "link": "https://www.1mg.com"
+    }
+}
 # ---------------- DATABASE ----------------
 def init_db():
     conn = sqlite3.connect("users.db")
@@ -64,7 +145,6 @@ def send_otp(email, otp):
 @app.route("/")
 def home():
     return render_template("landing.html")
-
 # ---------------- REGISTER (INLINE OTP) ----------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -121,6 +201,9 @@ def register():
                 return render_template("register.html", error=error, step="otp")
 
     return render_template("register.html", step="form")# ---------------- LOGIN ----------------
+
+
+# ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -143,56 +226,6 @@ def login():
 
     return render_template("login.html", error=error)
 
-# ---------------- FORGOT PASSWORD (INLINE OTP) ----------------
-@app.route("/forgot", methods=["GET", "POST"])
-def forgot():
-    error = None
-    step = "email"
-
-    if request.method == "POST":
-
-        # STEP 1 → Send OTP
-        if "send_otp" in request.form:
-            email = request.form["email"]
-
-            conn = sqlite3.connect("users.db")
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM users WHERE email=?", (email,))
-            if not cur.fetchone():
-                conn.close()
-                error = "Email not registered ❌"
-                return render_template("forgot.html", error=error, step="email")
-            conn.close()
-
-            otp = str(random.randint(100000, 999999))
-            session["reset_email"] = email
-            session["otp"] = otp
-
-            send_otp(email, otp)
-
-            return render_template("forgot.html", step="otp")
-
-        # STEP 2 → Reset Password
-        if "reset_password" in request.form:
-            otp = request.form["otp"]
-            new_password = hash_password(request.form["password"])
-
-            if otp == session.get("otp"):
-                conn = sqlite3.connect("users.db")
-                conn.execute(
-                    "UPDATE users SET password=? WHERE email=?",
-                    (new_password, session["reset_email"])
-                )
-                conn.commit()
-                conn.close()
-
-                return redirect("/login")
-            else:
-                error = "Invalid OTP ❌"
-                return render_template("forgot.html", error=error, step="otp")
-
-    return render_template("forgot.html", step="email")
-
 # ---------------- LOGOUT ----------------
 @app.route("/logout")
 def logout():
@@ -208,6 +241,9 @@ def predict():
     prediction = None
     confidence = None
     image_path = None
+    medicines = []
+    precautions = []
+    link = "#"
 
     if request.method == "POST":
         file = request.files["file"]
@@ -224,8 +260,14 @@ def predict():
                 probs = torch.softmax(output, dim=1)
                 conf, pred = torch.max(probs, 1)
 
-            prediction = labels[str(pred.item())]
-            
+            key = labels[str(pred.item())].lower()
+            info = disease_info.get(key, {})
+
+            prediction = info.get("name", key)
+            medicines = info.get("medicines", [])
+            precautions = info.get("precautions", [])
+            link = info.get("link", "#")
+
             confidence = round(conf.item() * 100, 2)
             image_path = filepath
 
@@ -233,6 +275,9 @@ def predict():
                            prediction=prediction,
                            confidence=confidence,
                            image_path=image_path,
+                           medicines=medicines,
+                           precautions=precautions,
+                           link=link,
                            user=session["user"])
 
 # ---------------- RUN ----------------
