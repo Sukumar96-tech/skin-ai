@@ -13,6 +13,8 @@ import torchvision.transforms as transforms
 import torch
 import json
 
+torch.set_num_threads(1)
+
 app = Flask(__name__)
 app.secret_key = "secret123"
 
@@ -24,7 +26,15 @@ EMAIL = "edupluseai0@gmail.com"
 APP_PASSWORD = "hlkq zvxr kylq eauy"
 
 # ---------------- LOAD MODEL ----------------
-model, device = load_model("model.pth")
+model = None
+device = None
+
+def get_model():
+    global model, device
+    if model is None:
+        from model import load_model
+        model, device = load_model("model.pth")
+    return model, device
 
 with open("labels.json") as f:
     labels = json.load(f)
@@ -252,6 +262,9 @@ def predict():
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
             file.save(filepath)
 
+            # ✅ LOAD MODEL HERE (IMPORTANT FIX)
+            model, device = get_model()
+
             image = Image.open(filepath).convert("RGB")
             image = transform(image).unsqueeze(0).to(device)
 
@@ -279,7 +292,6 @@ def predict():
                            precautions=precautions,
                            link=link,
                            user=session["user"])
-
 # ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
