@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forgot Password</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+
+<body>
+
+<div class="auth-container">
+    <div class="card">
+
+        <h2>🔑 Reset Password</h2>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <!-- STEP 1 -->
+        {% if step == "email" %}
+        <form method="POST">
+            <input type="email" name="email" placeholder="Enter Email" required>
+            <button name="send_otp">Send OTP</button>
+        </form>
+        {% endif %}
+
+        <!-- STEP 2 -->
+        {% if step == "otp" %}
+        <form method="POST">
+            <input type="text" name="otp" placeholder="Enter OTP" required>
+            <input type="password" name="password" placeholder="New Password" required>
+
+            <button name="reset_password">Reset Password</button>
+        </form>
+        {% endif %}
+
+        <p><a href="/login">Back to Login</a></p>
+
+    </div>
+</div>
+
+</body>
+</html>

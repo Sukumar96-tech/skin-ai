@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Skin AI</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='premium.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <h2>🧠 SkinAI</h2>
+    <div>
+        <span><i class="fa fa-user"></i> {{ user }}</span>
+        <a href="/logout" class="start-btn">Logout</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <h1><i class="fa fa-stethoscope"></i> AI Skin Diagnosis</h1>
+
+    <!-- UPLOAD -->
+    <form method="POST" enctype="multipart/form-data" id="dropForm">
+        <div class="drop-zone" id="dropZone">
+            <i class="fa fa-cloud-upload fa-2x"></i>
+            <p>Drag & Drop Image</p>
+            <span>or click to upload</span>
+            <input type="file" name="file" id="fileInput" hidden required>
+        </div>
+
+        <div id="preview-container">
+            <img id="preview">
+        </div>
+
+        <button type="submit">Analyze</button>
+    </form>
+
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <p>Analyzing with AI...</p>
+    </div>
+
+    <!-- RESULT -->
+    {% if prediction %}
+    <div class="result-grid">
+
+        <!-- MAIN CARD -->
+        <div class="card">
+            <h2><i class="fa fa-notes-medical"></i> {{ prediction }}</h2>
+            <p>Confidence: {{ confidence }}%</p>
+
+            <canvas id="chart"></canvas>
+        </div>
+
+        <!-- MEDICINES -->
+        <div class="card">
+            <h3><i class="fa fa-pills"></i> Medicines</h3>
+            <ul>
+                {% for med in medicines %}
+                <li>{{ med }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- PRECAUTIONS -->
+        <div class="card">
+            <h3><i class="fa fa-shield-alt"></i> Precautions</h3>
+            <ul>
+                {% for p in precautions %}
+                <li>{{ p }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ORDER BUTTON -->
+    <a href="{{ link }}" target="_blank" class="order-btn">
+        <i class="fa fa-shopping-cart"></i> Order Medicines
+    </a>
+
+    {% endif %}
+
+</div>
+
+<script>
+// Drag drop
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+
+dropZone.onclick = () => fileInput.click();
+
+fileInput.addEventListener("change", previewFile);
+
+dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("hover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("hover");
+});
+
+dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    previewFile();
+});
+
+function previewFile() {
+    const preview = document.getElementById("preview");
+    preview.src = URL.createObjectURL(fileInput.files[0]);
+    document.getElementById("preview-container").style.display = "block";
+}
+
+// Loader
+document.getElementById("dropForm").onsubmit = () => {
+    document.getElementById("loader").style.display = "block";
+};
+
+// Chart
+{% if prediction %}
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Confidence', 'Remaining'],
+        datasets: [{
+            data: [{{ confidence }}, {{ 100 - confidence }}]
+        }]
+    }
+});
+{% endif %}
+</script>
+
+</body>
+</html>

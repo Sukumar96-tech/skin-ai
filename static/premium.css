@@ -1,0 +1,252 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background: #020617;
+}
+
+/* CONTAINER */
+.container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* DROP ZONE */
+.drop-zone {
+    border: 2px dashed #6366f1;
+    padding: 40px;
+    margin: 20px auto;
+    width: 350px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.drop-zone:hover {
+    background: rgba(99,102,241,0.2);
+}
+
+/* IMAGE */
+#preview-container {
+    display: none;
+}
+
+#preview {
+    width: 200px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+/* BUTTON */
+button {
+    padding: 12px 25px;
+    background: #6366f1;
+    border: none;
+    color: white;
+    border-radius: 8px;
+}
+
+/* GRID */
+.result-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* CARD */
+.card {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    width: 250px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* ORDER BUTTON */
+.order-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #22c55e;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+/* LOADER */
+#loader {
+    display: none;
+}
+
+.spinner {
+    border: 5px solid #ccc;
+    border-top: 5px solid #6366f1;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+/* HERO */
+.hero {
+    text-align: center;
+    margin-top: 80px;
+}
+
+.hero h1 {
+    font-size: 40px;
+}
+
+.hero p {
+    opacity: 0.8;
+    margin-bottom: 20px;
+}
+
+/* BUTTONS */
+.hero-buttons {
+    margin-top: 20px;
+}
+
+.start-btn {
+    background: #6366f1;
+    padding: 12px 25px;
+    border-radius: 8px;
+    margin-right: 10px;
+    text-decoration: none;
+    color: white;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid white;
+    padding: 12px 25px;
+    border-radius: 8px;
+    color: white;
+}
+
+/* FEATURES */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 60px;
+}
+
+.feature-card {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    width: 250px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+/* STEPS */
+.steps {
+    margin-top: 60px;
+    text-align: center;
+}
+
+.step-grid {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.step {
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 60px;
+    text-align: center;
+    opacity: 0.7;
+}
+/* 🔥 BACKGROUND ANIMATION */
+body {
+    background: linear-gradient(-45deg, #0f172a, #1e293b, #312e81, #4c1d95);
+    background-size: 400% 400%;
+    animation: gradientBG 10s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ✨ HERO TEXT GLOW */
+.hero h1 {
+    text-shadow: 0 0 20px rgba(99,102,241,0.8);
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+/* ✨ FADE IN ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 💫 FEATURE CARD HOVER */
+.feature-card {
+    transition: 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* 💫 STEP CARD HOVER */
+.step {
+    transition: 0.3s;
+}
+
+.step:hover {
+    transform: scale(1.1);
+}
+
+/* 🚀 BUTTON ANIMATION */
+button, .start-btn {
+    transition: 0.3s;
+}
+
+button:hover, .start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(99,102,241,0.6);
+}
+
+/* 💊 ORDER BUTTON GLOW */
+.order-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(34,197,94,0.7);
+}
+
+/* 📤 DROP ZONE ANIMATION */
+.drop-zone {
+    transition: 0.3s;
+}
+
+.drop-zone:hover {
+    transform: scale(1.03);
+}
+
+/* 📊 CARD FADE IN */
+.card {
+    animation: fadeIn 1s ease-in-out;
+}
