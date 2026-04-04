@@ -13,8 +13,6 @@ import torchvision.transforms as transforms
 import torch
 import json
 
-torch.set_num_threads(1)
-
 app = Flask(__name__)
 app.secret_key = "secret123"
 
@@ -26,15 +24,7 @@ EMAIL = "edupluseai0@gmail.com"
 APP_PASSWORD = "hlkq zvxr kylq eauy"
 
 # ---------------- LOAD MODEL ----------------
-model = None
-device = None
-
-def get_model():
-    global model, device
-    if model is None:
-        from model import load_model
-        model, device = load_model("model.pth")
-    return model, device
+model, device = load_model("model.pth")
 
 with open("labels.json") as f:
     labels = json.load(f)
@@ -143,22 +133,13 @@ def hash_password(password):
 
 # ---------------- SEND OTP ----------------
 def send_otp(email, otp):
-    try:
-        message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
+    message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
 
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-
-        server.login(EMAIL, APP_PASSWORD)
-        server.sendmail(EMAIL, email, message)
-        server.quit()
-
-        print("✅ OTP sent successfully")
-
-    except Exception as e:
-        print("❌ Email error:", e)
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(EMAIL, APP_PASSWORD)
+    server.sendmail(EMAIL, email, message)
+    server.quit()
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -250,7 +231,55 @@ def login():
 def logout():
     session.clear()
     return redirect("/")
+#-----------------forgot password----------------
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot():
+    error = None
+    step = "email"
 
+    if request.method == "POST":
+
+        # STEP 1 → Send OTP
+        if "send_otp" in request.form:
+            email = request.form.get("email")
+
+            conn = sqlite3.connect("users.db")
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM users WHERE email=?", (email,))
+            if not cur.fetchone():
+                conn.close()
+                error = "Email not registered ❌"
+                return render_template("forgot.html", error=error, step="email")
+            conn.close()
+
+            otp = str(random.randint(100000, 999999))
+            session["reset_email"] = email
+            session["otp"] = otp
+
+            send_otp(email, otp)
+
+            return render_template("forgot.html", step="otp")
+
+        # STEP 2 → Reset Password
+        elif "reset_password" in request.form:
+            otp = request.form.get("otp")
+            new_password = hash_password(request.form.get("password"))
+
+            if otp == session.get("otp"):
+                conn = sqlite3.connect("users.db")
+                conn.execute(
+                    "UPDATE users SET password=? WHERE email=?",
+                    (new_password, session["reset_email"])
+                )
+                conn.commit()
+                conn.close()
+
+                return redirect("/login")
+            else:
+                error = "Invalid OTP ❌"
+                return render_template("forgot.html", error=error, step="otp")
+
+    return render_template("forgot.html", step="email")
 # ---------------- PREDICT ----------------
 @app.route("/predict", methods=["GET", "POST"])
 def predict():
@@ -270,9 +299,6 @@ def predict():
         if file:
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
             file.save(filepath)
-
-            # ✅ LOAD MODEL HERE (IMPORTANT FIX)
-            model, device = get_model()
 
             image = Image.open(filepath).convert("RGB")
             image = transform(image).unsqueeze(0).to(device)
@@ -301,6 +327,7 @@ def predict():
                            precautions=precautions,
                            link=link,
                            user=session["user"])
+
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)
