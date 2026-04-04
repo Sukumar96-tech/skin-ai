@@ -187,11 +187,8 @@ def register():
 
             send_otp(email, otp)
 
-             # fallback (show OTP in UI/log)
-            print("OTP:", otp)
-
-            return render_template("register.html", step="otp")
-
+            return render_template("register.html", step="otp", otp=otp)
+            
         elif "verify_otp" in request.form:
             user_otp = request.form.get("otp")
 
