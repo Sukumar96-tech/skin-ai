@@ -133,13 +133,19 @@ def hash_password(password):
 
 # ---------------- SEND OTP ----------------
 def send_otp(email, otp):
-    message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
+    try:
+        message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(EMAIL, APP_PASSWORD)
-    server.sendmail(EMAIL, email, message)
-    server.quit()
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
+        server.starttls()
+        server.login(EMAIL, APP_PASSWORD)
+        server.sendmail(EMAIL, email, message)
+        server.quit()
+
+        print("✅ OTP sent")
+
+    except Exception as e:
+        print("❌ Email failed:", e)
 
 # ---------------- HOME ----------------
 @app.route("/")
@@ -181,6 +187,9 @@ def register():
 
             send_otp(email, otp)
 
+             # fallback (show OTP in UI/log)
+            print("OTP:", otp)
+
             return render_template("register.html", step="otp")
 
         elif "verify_otp" in request.form:
@@ -200,10 +209,8 @@ def register():
                 error = "Invalid OTP ❌"
                 return render_template("register.html", error=error, step="otp")
 
-    return render_template("register.html", step="form")# ---------------- LOGIN ----------------
-
-
-# ---------------- LOGIN ----------------
+    return render_template("register.html", step="form")
+    # ---------------- LOGIN ----------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
