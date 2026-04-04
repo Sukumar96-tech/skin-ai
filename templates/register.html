@@ -31,8 +31,16 @@
 
         <!-- STEP 2 OTP -->
         {% if step == "otp" %}
+
+        <!-- 🔥 SHOW OTP HERE -->
+        {% if otp %}
+        <div style="background:#222; padding:10px; border-radius:8px; margin-bottom:10px; color:#22c55e;">
+            🔐 Your OTP: <b>{{ otp }}</b>
+        </div>
+        {% endif %}
+
         <form method="POST">
-            <p>📧 OTP sent to your email</p>
+            <p>📧 Enter the OTP</p>
             <input type="text" name="otp" placeholder="Enter OTP" required>
 
             <button name="verify_otp">Verify & Register</button>
