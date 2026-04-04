@@ -143,13 +143,22 @@ def hash_password(password):
 
 # ---------------- SEND OTP ----------------
 def send_otp(email, otp):
-    message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
+    try:
+        message = f"Subject: OTP Verification\n\nYour OTP is: {otp}"
 
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(EMAIL, APP_PASSWORD)
-    server.sendmail(EMAIL, email, message)
-    server.quit()
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+
+        server.login(EMAIL, APP_PASSWORD)
+        server.sendmail(EMAIL, email, message)
+        server.quit()
+
+        print("✅ OTP sent successfully")
+
+    except Exception as e:
+        print("❌ Email error:", e)
 
 # ---------------- HOME ----------------
 @app.route("/")
